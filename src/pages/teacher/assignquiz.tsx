@@ -1,3 +1,6 @@
+import type { User } from "../../types/user";
+import type { Quiz } from "../../types/quiz";
+
 function AssignQuizPage() {
   return (
     <main>
