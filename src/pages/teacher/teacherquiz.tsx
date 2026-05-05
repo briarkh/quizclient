@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Quiz } from "../../types/quiz";
 import { deleteQuiz, getAllQuizzes } from "../../api/quizApi";
+import QuizCard from "../../components/quizcard";
 
 function TeacherQuizPage() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -70,19 +71,11 @@ function TeacherQuizPage() {
       {!isLoading && quizzes.length === 0 && <p>No quizzes found.</p>}
 
       {quizzes.map((quiz) => (
-        <section key={quiz.id}>
-          <h2>{quiz.title}</h2>
-          <p>{quiz.description}</p>
-          <p>Questions: {quiz.questions.length}</p>
-
-          <Link to={`/teacher/quizzes/${quiz.id}/edit`}>Edit</Link>
-          {" | "}
-          <Link to={`/teacher/quizzes/${quiz.id}/scores`}>View Scores</Link>
-          {" | "}
-          <button type="button" onClick={() => void handleDeleteQuiz(quiz.id)}>
-            Delete
-          </button>
-        </section>
+        <QuizCard
+          key={quiz.id}
+          quiz={quiz}
+          onDelete={(quizId) => void handleDeleteQuiz(quizId)}
+        />
       ))}
     </main>
   );

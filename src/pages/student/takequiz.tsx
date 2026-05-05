@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getQuizById } from "../../api/quizApi";
 import { submitQuiz } from "../../api/submissionApi";
-import { useAuth } from "../../context/authcontext";
+import { useAuth } from "../../context/useAuth";
 import type { MultipleChoiceOption, Quiz } from "../../types/quiz";
 import type { Score } from "../../types/score";
+import MultipleChoiceQuestion from "../../components/multiplechoiceques";
 
 type AnswerMap = Record<number, MultipleChoiceOption>;
 
@@ -175,35 +176,13 @@ function TakeQuizPage() {
 
       <form onSubmit={handleSubmit}>
         {quiz.questions.map((question, index) => (
-          <section key={question.id}>
-            <h2>
-              Question {index + 1}: {question.questionText}
-            </h2>
-
-            {(["A", "B", "C", "D"] as const).map((option) => {
-              const optionText =
-                option === "A"
-                  ? question.optionA
-                  : option === "B"
-                    ? question.optionB
-                    : option === "C"
-                      ? question.optionC
-                      : question.optionD;
-
-              return (
-                <label key={option}>
-                  <input
-                    type="radio"
-                    name={`question-${question.id}`}
-                    value={option}
-                    checked={answers[question.id] === option}
-                    onChange={() => handleAnswerChange(question.id, option)}
-                  />
-                  {option}. {optionText}
-                </label>
-              );
-            })}
-          </section>
+          <MultipleChoiceQuestion
+            key={question.id}
+            question={question}
+            questionNumber={index + 1}
+            selectedAnswer={answers[question.id]}
+            onAnswerChange={handleAnswerChange}
+          />
         ))}
 
         <button type="submit" disabled={isSubmitting}>

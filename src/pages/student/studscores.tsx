@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getScoresByStudent } from "../../api/scoreApi";
-import { useAuth } from "../../context/authcontext";
+import { useAuth } from "../../context/useAuth";
 import type { Score } from "../../types/score";
 
 function StudentResultsPage() {

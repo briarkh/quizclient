@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getStudentAssignments } from "../../api/assignmentApi";
-import { useAuth } from "../../context/authcontext";
+import { useAuth } from "../../context/useAuth";
 import type { QuizAssignment } from "../../api/assignmentApi";
 
 function StudentQuizPage() {
