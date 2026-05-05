@@ -1,9 +1,11 @@
 import type { Score } from "../types/score";
+import type { MultipleChoiceOption } from "../types/quiz";
 import { API_BASE_URL } from "./config";
+import { authFetch } from "./authFetch";
 
 export interface QuizAnswer {
   questionId: number;
-  answer: string;
+  answer: MultipleChoiceOption;
 }
 
 export interface QuizSubmission {
@@ -12,30 +14,18 @@ export interface QuizSubmission {
   answers: QuizAnswer[];
 }
 
-// POST submit quiz answers
-
-// Possible routes:
-// POST /students/:studentId/quizzes/:quizId/submit
-// POST /quizzes/:quizId/submit
-// POST /submissions
+//POST submit quiz answers
 
 export async function submitQuiz(submission: QuizSubmission): Promise<Score> {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/students/${submission.studentId}/quizzes/${submission.quizId}/submit`,
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         answers: submission.answers,
       }),
     },
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to submit quiz");
-  }
 
   return response.json() as Promise<Score>;
 }

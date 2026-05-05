@@ -1,34 +1,37 @@
 import { API_BASE_URL } from "./config";
+import { authFetch } from "./authFetch";
 
 export interface QuizAssignment {
   id: number;
-  quizId: number;
   studentId: number;
+  quizId: number;
+  quizTitle: string;
+  studentName: string;
+  assignedAt: string;
 }
-
-//POST assign a quiz to a student
-
-//POST /quizzes/:quizId/assign /quizzes/${quizId}/assign
-///students/:studentId/quizzes /students/${studentId}/quizzes
 
 export async function assignQuizToStudent(
   quizId: number,
   studentId: number,
 ): Promise<QuizAssignment> {
-  const response = await fetch(`${API_BASE_URL}/assignments`, {
+  const response = await authFetch(`${API_BASE_URL}/assignments`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify({
       quizId,
       studentId,
     }),
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to assign quiz");
-  }
-
   return response.json() as Promise<QuizAssignment>;
+}
+
+//GET quizzes assigned to a student
+export async function getStudentAssignments(
+  studentId: number,
+): Promise<QuizAssignment[]> {
+  const response = await authFetch(
+    `${API_BASE_URL}/students/${studentId}/assignments`,
+  );
+
+  return response.json() as Promise<QuizAssignment[]>;
 }

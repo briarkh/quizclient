@@ -1,5 +1,3 @@
-export type QuestionType = "multiple_choice" | "short_answer";
-
 export type MultipleChoiceOption = "A" | "B" | "C" | "D";
 
 export interface MultipleChoiceQuestion {
@@ -14,20 +12,11 @@ export interface MultipleChoiceQuestion {
   correctOption: MultipleChoiceOption;
 }
 
-export interface ShortAnswerQuestion {
-  id: number;
-  quizId: number;
-  type: "short_answer";
-  questionText: string;
-  correctAnswer: string;
-}
+export type QuizQuestion = MultipleChoiceQuestion;
 
-export type QuizQuestion = MultipleChoiceQuestion | ShortAnswerQuestion;
-
-//change if needed
 export interface Quiz {
   id: number;
   title: string;
-  description: string;
+  description: string | null;
   questions: QuizQuestion[];
 }

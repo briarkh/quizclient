@@ -1,92 +1,106 @@
 import { useState } from "react";
-import type {
-  MultipleChoiceOption,
-  QuestionType,
-  QuizQuestion,
-} from "../../types/quiz";
+import { useNavigate } from "react-router-dom";
+import { createQuiz } from "../../api/quizApi";
+import type { MultipleChoiceOption, QuizQuestion } from "../../types/quiz";
 
 function CreateQuizPage() {
+  const navigate = useNavigate();
+
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
 
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
 
-  const [questionType, setQuestionType] =
-    useState<QuestionType>("multiple_choice");
   const [questionText, setQuestionText] = useState<string>("");
-
   const [optionA, setOptionA] = useState<string>("");
   const [optionB, setOptionB] = useState<string>("");
   const [optionC, setOptionC] = useState<string>("");
   const [optionD, setOptionD] = useState<string>("");
   const [correctOption, setCorrectOption] = useState<MultipleChoiceOption>("A");
 
-  const [correctAnswer, setCorrectAnswer] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   function resetQuestionForm() {
-    setQuestionType("multiple_choice");
     setQuestionText("");
     setOptionA("");
     setOptionB("");
     setOptionC("");
     setOptionD("");
     setCorrectOption("A");
-    setCorrectAnswer("");
   }
 
   function handleAddQuestion() {
+    setErrorMessage("");
+
     if (questionText.trim() === "") {
+      setErrorMessage("Question text is required.");
       return;
     }
 
-    //fake ids \/ for now, this needs to be connected to the backend to get real ids
+    if (
+      optionA.trim() === "" ||
+      optionB.trim() === "" ||
+      optionC.trim() === "" ||
+      optionD.trim() === ""
+    ) {
+      setErrorMessage("All four answer options are required.");
+      return;
+    }
+
     const newQuestionId = questions.length + 1;
-
-    if (questionType === "multiple_choice") {
-      const newQuestion: QuizQuestion = {
-        id: newQuestionId,
-        quizId: 0,
-        type: "multiple_choice",
-        questionText,
-        optionA,
-        optionB,
-        optionC,
-        optionD,
-        correctOption,
-      };
-
-      setQuestions((currentQuestions) => [...currentQuestions, newQuestion]);
-      resetQuestionForm();
-      return;
-    }
 
     const newQuestion: QuizQuestion = {
       id: newQuestionId,
       quizId: 0,
-      type: "short_answer",
-      questionText,
-      correctAnswer,
+      type: "multiple_choice",
+      questionText: questionText.trim(),
+      optionA: optionA.trim(),
+      optionB: optionB.trim(),
+      optionC: optionC.trim(),
+      optionD: optionD.trim(),
+      correctOption,
     };
 
     setQuestions((currentQuestions) => [...currentQuestions, newQuestion]);
     resetQuestionForm();
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setErrorMessage("");
 
-    const newQuiz = {
-      title,
-      description,
-      questions,
-    };
+    if (title.trim() === "") {
+      setErrorMessage("Quiz title is required.");
+      return;
+    }
 
-    console.log(newQuiz);
+    if (questions.length === 0) {
+      setErrorMessage("Please add at least one question.");
+      return;
+    }
+
+    try {
+      await createQuiz({
+        title: title.trim(),
+        description: description.trim(),
+        questions,
+      });
+
+      navigate("/teacher/quizzes");
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Failed to create quiz.");
+      }
+    }
   }
 
   return (
     <main>
       <h1>Create Quiz</h1>
+
+      {errorMessage && <p>{errorMessage}</p>}
 
       <form onSubmit={handleSubmit}>
         <div>
@@ -113,20 +127,6 @@ function CreateQuizPage() {
         <h2>Add Question</h2>
 
         <div>
-          <label htmlFor="questionType">Question Type</label>
-          <select
-            id="questionType"
-            value={questionType}
-            onChange={(event) =>
-              setQuestionType(event.target.value as QuestionType)
-            }
-          >
-            <option value="multiple_choice">Multiple Choice</option>
-            <option value="short_answer">Short Answer</option>
-          </select>
-        </div>
-
-        <div>
           <label htmlFor="questionText">Question Text</label>
           <input
             id="questionText"
@@ -136,77 +136,61 @@ function CreateQuizPage() {
           />
         </div>
 
-        {questionType === "multiple_choice" && (
-          <>
-            <div>
-              <label htmlFor="optionA">Option A</label>
-              <input
-                id="optionA"
-                type="text"
-                value={optionA}
-                onChange={(event) => setOptionA(event.target.value)}
-              />
-            </div>
+        <div>
+          <label htmlFor="optionA">Option A</label>
+          <input
+            id="optionA"
+            type="text"
+            value={optionA}
+            onChange={(event) => setOptionA(event.target.value)}
+          />
+        </div>
 
-            <div>
-              <label htmlFor="optionB">Option B</label>
-              <input
-                id="optionB"
-                type="text"
-                value={optionB}
-                onChange={(event) => setOptionB(event.target.value)}
-              />
-            </div>
+        <div>
+          <label htmlFor="optionB">Option B</label>
+          <input
+            id="optionB"
+            type="text"
+            value={optionB}
+            onChange={(event) => setOptionB(event.target.value)}
+          />
+        </div>
 
-            <div>
-              <label htmlFor="optionC">Option C</label>
-              <input
-                id="optionC"
-                type="text"
-                value={optionC}
-                onChange={(event) => setOptionC(event.target.value)}
-              />
-            </div>
+        <div>
+          <label htmlFor="optionC">Option C</label>
+          <input
+            id="optionC"
+            type="text"
+            value={optionC}
+            onChange={(event) => setOptionC(event.target.value)}
+          />
+        </div>
 
-            <div>
-              <label htmlFor="optionD">Option D</label>
-              <input
-                id="optionD"
-                type="text"
-                value={optionD}
-                onChange={(event) => setOptionD(event.target.value)}
-              />
-            </div>
+        <div>
+          <label htmlFor="optionD">Option D</label>
+          <input
+            id="optionD"
+            type="text"
+            value={optionD}
+            onChange={(event) => setOptionD(event.target.value)}
+          />
+        </div>
 
-            <div>
-              <label htmlFor="correctOption">Correct Option</label>
-              <select
-                id="correctOption"
-                value={correctOption}
-                onChange={(event) =>
-                  setCorrectOption(event.target.value as MultipleChoiceOption)
-                }
-              >
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-                <option value="D">D</option>
-              </select>
-            </div>
-          </>
-        )}
-
-        {questionType === "short_answer" && (
-          <div>
-            <label htmlFor="correctAnswer">Correct Answer</label>
-            <input
-              id="correctAnswer"
-              type="text"
-              value={correctAnswer}
-              onChange={(event) => setCorrectAnswer(event.target.value)}
-            />
-          </div>
-        )}
+        <div>
+          <label htmlFor="correctOption">Correct Option</label>
+          <select
+            id="correctOption"
+            value={correctOption}
+            onChange={(event) =>
+              setCorrectOption(event.target.value as MultipleChoiceOption)
+            }
+          >
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+          </select>
+        </div>
 
         <button type="button" onClick={handleAddQuestion}>
           Add Question
@@ -222,21 +206,13 @@ function CreateQuizPage() {
           questions.map((question) => (
             <section key={question.id}>
               <h3>{question.questionText}</h3>
-              <p>Type: {question.type}</p>
-
-              {question.type === "multiple_choice" && (
-                <ul>
-                  <li>A: {question.optionA}</li>
-                  <li>B: {question.optionB}</li>
-                  <li>C: {question.optionC}</li>
-                  <li>D: {question.optionD}</li>
-                  <li>Correct Answer: {question.correctOption}</li>
-                </ul>
-              )}
-
-              {question.type === "short_answer" && (
-                <p>Correct Answer: {question.correctAnswer}</p>
-              )}
+              <ul>
+                <li>A: {question.optionA}</li>
+                <li>B: {question.optionB}</li>
+                <li>C: {question.optionC}</li>
+                <li>D: {question.optionD}</li>
+                <li>Correct Answer: {question.correctOption}</li>
+              </ul>
             </section>
           ))
         )}
